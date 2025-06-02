@@ -10,7 +10,8 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies for production
-RUN npm ci --only=production
+# ESTA ES LA LÍNEA CORREGIDA:
+RUN npm install --only=production --legacy-peer-deps
 
 # Bundle app source
 COPY . .
