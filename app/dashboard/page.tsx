@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { GamepadIcon, Trophy, Users, LogOut, Play, Eye } from "lucide-react"
+import { Input } from "@/components/ui/input" // Importar Input
+import { GamepadIcon, Trophy, Users, LogOut, Play, Eye, Search } from "lucide-react" // Importar Search
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import ConnectionStatus from "@/components/ConnectionStatus"
@@ -20,6 +21,8 @@ interface User {
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [joinGameId, setJoinGameId] = useState("") // Estado para el ID de la partida a unirse
+  const [spectateGameId, setSpectateGameId] = useState("") // Estado para el ID de la partida a espectar
   const router = useRouter()
 
   useEffect(() => {
@@ -36,7 +39,7 @@ export default function DashboardPage() {
       setUser(parsedUser)
     } catch (error) {
       console.error("Error parsing user data:", error)
-      router.push("/") // Redirigir si hay error en los datos
+      router.push("/")
     } finally {
       setLoading(false)
     }
@@ -53,12 +56,22 @@ export default function DashboardPage() {
     router.push(`/game/${gameId}`)
   }
 
-  const handleJoinGame = (gameId = "demo-game-123") => {
-    router.push(`/game/${gameId}`)
+  const handleJoinGame = () => {
+    if (joinGameId.trim()) {
+      router.push(`/game/${joinGameId.trim()}`)
+    } else {
+      // Opcional: mostrar un error si el ID está vacío
+      alert("Por favor, ingresa un ID de partida para unirte.")
+    }
   }
 
-  const handleSpectateGame = (gameId = "demo-game-123") => {
-    router.push(`/game/spectate/${gameId}`)
+  const handleSpectateGame = () => {
+    if (spectateGameId.trim()) {
+      router.push(`/game/spectate/${spectateGameId.trim()}`)
+    } else {
+      // Opcional: mostrar un error si el ID está vacío
+      alert("Por favor, ingresa un ID de partida para espectar.")
+    }
   }
 
   if (loading) {
@@ -70,7 +83,6 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    // Esto no debería pasar si la lógica de useEffect es correcta, pero es un fallback
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
         <div className="text-white text-xl">Error al cargar datos de usuario. Por favor, inicia sesión de nuevo.</div>
@@ -141,7 +153,7 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-white/80 mb-4">Inicia una nueva partida y espera a que se unan otros jugadores</p>
+              <p className="text-white/80 mb-4">Inicia una nueva partida y comparte el ID con tus amigos.</p>
               <Button className="w-full bg-green-600 hover:bg-green-700" onClick={handleCreateGame}>
                 <Play className="h-4 w-4 mr-2" />
                 Crear Partida
@@ -152,66 +164,83 @@ export default function DashboardPage() {
           <Card className="bg-white/10 backdrop-blur-md border-white/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Unirse o Espectar Partida
+                <Search className="h-5 w-5" />
+                Buscar Partida
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-white/80 mb-4">Únete a una partida existente o mira como espectador</p>
-              <Button className="w-full" variant="outline" onClick={() => handleJoinGame()}>
-                <Play className="h-4 w-4 mr-1" />
-                Unirse a Partida Demo
-              </Button>
-              <Button className="w-full mt-2" variant="outline" onClick={() => handleSpectateGame()}>
-                <Eye className="h-4 w-4 mr-1" />
-                Espectar Partida Demo
-              </Button>
+            <CardContent className="space-y-4">
+              <div>
+                <label htmlFor="joinGameId" className="text-sm font-medium text-white/80 block mb-1">
+                  ID de Partida para Unirse:
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    id="joinGameId"
+                    type="text"
+                    placeholder="Ingresa ID de partida"
+                    value={joinGameId}
+                    onChange={(e) => setJoinGameId(e.target.value)}
+                    className="bg-white/20 border-white/30 text-white placeholder-white/50"
+                  />
+                  <Button variant="outline" onClick={handleJoinGame}>
+                    <Play className="h-4 w-4 mr-1" />
+                    Unirse
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <label htmlFor="spectateGameId" className="text-sm font-medium text-white/80 block mb-1">
+                  ID de Partida para Espectar:
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    id="spectateGameId"
+                    type="text"
+                    placeholder="Ingresa ID de partida"
+                    value={spectateGameId}
+                    onChange={(e) => setSpectateGameId(e.target.value)}
+                    className="bg-white/20 border-white/30 text-white placeholder-white/50"
+                  />
+                  <Button variant="outline" onClick={handleSpectateGame}>
+                    <Eye className="h-4 w-4 mr-1" />
+                    Espectar
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Partidas en Vivo */}
+        {/* Partidas en Vivo (Simulado por ahora) */}
         <Card className="bg-white/10 backdrop-blur-md border-white/20">
           <CardHeader>
-            <CardTitle className="text-white">🔴 Partidas en Vivo (Simulado)</CardTitle>
+            <CardTitle className="text-white">🔴 Partidas en Vivo (Próximamente)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {/* Partida Demo 1 */}
+            <p className="text-white/70">
+              Aquí se mostrará una lista de partidas públicas a las que te podrás unir o espectar. Por ahora, usa la
+              sección "Buscar Partida" con un ID específico.
+            </p>
+            {/* Ejemplo de cómo podría lucir una partida (comentado)
+            <div className="space-y-3 mt-4">
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                 <div>
-                  <p className="text-white font-medium">Partida Demo - Sala #demo-game-123</p>
-                  <p className="text-white/60 text-sm">2 jugadores • En progreso</p>
+                  <p className="text-white font-medium">Partida de Juan - Sala #game-xyz123</p>
+                  <p className="text-white/60 text-sm">1/2 jugadores • Esperando</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleJoinGame("demo-game-123")}>
+                  <Button size="sm" variant="outline" onClick={() => router.push('/game/game-xyz123')}>
                     <Play className="h-4 w-4 mr-1" />
                     Unirse
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleSpectateGame("demo-game-123")}>
-                    <Eye className="h-4 w-4 mr-1" />
-                    Ver
-                  </Button>
-                </div>
-              </div>
-              {/* Partida Demo 2 */}
-              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div>
-                  <p className="text-white font-medium">Torneo Semanal - Sala #tournament-live</p>
-                  <p className="text-white/60 text-sm">8 jugadores • Esperando</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleJoinGame("tournament-live")}>
-                    <Play className="h-4 w-4 mr-1" />
-                    Unirse
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleSpectateGame("tournament-live")}>
+                  <Button size="sm" variant="outline" onClick={() => router.push('/game/spectate/game-xyz123')}>
                     <Eye className="h-4 w-4 mr-1" />
                     Ver
                   </Button>
                 </div>
               </div>
             </div>
+            */}
           </CardContent>
         </Card>
 

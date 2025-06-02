@@ -5,7 +5,7 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Eye, EyeOff, GamepadIcon, Trophy, Users } from "lucide-react"
+import { Eye, EyeOff, GamepadIcon, Trophy, Users, Loader2 } from "lucide-react" // Added Loader2
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -21,7 +21,7 @@ if (typeof window === "undefined") {
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(true)
+  const [isConnecting, setIsConnecting] = useState(true) // Mantenemos la simulación de conexión inicial
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   // Simulate connection status
   useEffect(() => {
-    const timer = setTimeout(() => setIsConnecting(false), 1500) // Reducido tiempo de conexión
+    const timer = setTimeout(() => setIsConnecting(false), 1000) // Reducido tiempo de conexión
 
     // Check if already logged in
     const userId = localStorage.getItem("user_id")
@@ -62,7 +62,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-sky-50">
+    <div className="min-h-screen flex items-center justify-center bg-sky-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2">
           <div className="flex items-center gap-2">
@@ -80,36 +80,38 @@ export default function LoginPage() {
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@pasapalabra.com"
+                placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="mt-1"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Contraseña
               </label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="admin123"
+                  placeholder="Tu contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="mt-1"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-0 top-0 h-full"
+                  className="absolute right-0 top-0 h-full px-3"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -118,31 +120,34 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+            {error && <div className="text-red-600 text-sm text-center p-2 bg-red-50 rounded-md">{error}</div>}
 
-            <Button type="submit" className="w-full bg-blue-400 hover:bg-blue-500" disabled={isLoading}>
-              {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
+            <Button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+              disabled={isLoading || isConnecting}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Iniciando sesión...
+                </>
+              ) : (
+                "Iniciar Sesión"
+              )}
             </Button>
           </form>
 
           <div className="text-center text-sm">
-            <Link href="/register" className="text-blue-500 hover:underline">
+            <Link href="/register" className="text-blue-600 hover:underline">
               ¿No tienes cuenta? Regístrate
             </Link>
           </div>
 
-          {/* Credenciales de prueba */}
-          <div className="bg-blue-50 p-3 rounded-lg text-sm">
-            <p className="font-semibold text-blue-800 mb-2">Credenciales de prueba:</p>
-            <div className="space-y-1">
-              <p className="text-blue-700">👑 Admin: admin@pasapalabra.com / admin123</p>
-              <p className="text-blue-700">🎮 Jugador 1: jugador1@test.com / admin123</p>
-              <p className="text-blue-700">🎮 Jugador 2: jugador2@test.com / admin123</p>
-            </div>
-          </div>
+          {/* SECCIÓN DE CREDENCIALES DE PRUEBA ELIMINADA */}
         </CardContent>
-        <CardFooter className="flex justify-center border-t pt-4">
-          <div className="flex gap-4 text-xs text-muted-foreground">
+        <CardFooter className="flex justify-center border-t pt-4 mt-4">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <GamepadIcon className="h-4 w-4" />
               <span>Partidas en tiempo real</span>
