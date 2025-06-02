@@ -519,15 +519,15 @@ export default function DashboardPage() {
         {/* Premium & Customization Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {!isPremiumActuallyActive && (
-            <Card className="bg-gradient-to-r from-yellow-500/10 via-amber-500/10 to-orange-500/10 backdrop-blur-md border-yellow-400/30 md:col-span-1">
+            <Card className="bg-yellow-100 backdrop-blur-md border-yellow-400 md:col-span-1"> {/* Modified background and border */}
               <CardHeader>
-                <CardTitle className="text-2xl text-yellow-300 flex items-center gap-2">
+                <CardTitle className="text-2xl text-yellow-800 flex items-center gap-2"> {/* Modified text color */}
                   <Star className="h-7 w-7" /> ¡Hazte Premium!
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-white/90">
+              <CardContent className="text-black"> {/* Modified text color */}
                 <p className="mb-3 text-lg">Disfruta de la experiencia completa:</p>
-                <ul className="list-disc list-inside space-y-2 mb-6 pl-2 text-yellow-100/90">
+                <ul className="list-disc list-inside space-y-2 mb-6 pl-2 text-yellow-800"> {/* Modified text color */}
                   <li>✨ Acceso Exclusivo a Skins Divertidos.</li>
                   <li>🏆 Niveles VIP con recompensas y reconocimiento.</li>
                   <li>📸 Filtros de Cámara únicos para tus videollamadas.</li>
@@ -535,12 +535,12 @@ export default function DashboardPage() {
                   <li>♾️ Acceso Ilimitado a todas las funciones de juego.</li>
                 </ul>
                 {isTrialActive && trialTimeLeft && (
-                  <p className="mb-4 text-center text-green-300 bg-green-600/20 p-2 rounded-md">
+                  <p className="mb-4 text-center text-green-700 bg-green-200 p-2 rounded-md"> {/* Modified text and background */}
                     ¡Aún tienes {trialTimeLeft} de tu prueba gratuita!
                   </p>
                 )}
                 {trialTimeLeft && trialTimeLeft.includes("finalizado") && (
-                  <p className="mb-4 text-center text-red-300 bg-red-600/20 p-2 rounded-md">
+                  <p className="mb-4 text-center text-red-700 bg-red-200 p-2 rounded-md"> {/* Modified text and background */}
                     Tu prueba ha terminado. ¡Suscríbete para seguir disfrutando!
                   </p>
                 )}
