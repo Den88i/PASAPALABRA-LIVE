@@ -287,7 +287,7 @@ export default function DashboardPage() {
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="text-white border-white/50 hover:bg-white/10"
+              className="bg-blue-200 text-black border-blue-300 hover:bg-blue-300" // Modified
             >
               <LogOut className="h-4 w-4 mr-2" /> Cerrar Sesión
             </Button>
@@ -416,7 +416,7 @@ export default function DashboardPage() {
             <CardContent>
               <p className="text-white/80 mb-4">Inicia una nueva partida y comparte el ID.</p>
               <Button
-                className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-green-600/50"
+                className="w-full bg-green-600 hover:bg-green-700 text-black disabled:bg-green-600/50" // Modified
                 onClick={handleCreateGame}
                 disabled={!canPlayGames}
               >
@@ -448,7 +448,7 @@ export default function DashboardPage() {
                   <Button
                     variant="outline"
                     onClick={handleJoinGame}
-                    className="text-white border-white/50 hover:bg-white/10 disabled:opacity-70 disabled:hover:bg-transparent"
+                    className="bg-indigo-200 text-black border-indigo-300 hover:bg-indigo-300 disabled:opacity-70 disabled:hover:bg-transparent" // Modified
                     disabled={!canPlayGames || !joinGameId.trim()}
                   >
                     <Play className="h-4 w-4 mr-1" /> Unirse
@@ -471,7 +471,7 @@ export default function DashboardPage() {
                   <Button
                     variant="outline"
                     onClick={handleSpectateGame}
-                    className="text-white border-white/50 hover:bg-white/10 disabled:opacity-70"
+                    className="bg-purple-200 text-black border-purple-300 hover:bg-purple-300 disabled:opacity-70" // Modified
                     disabled={!spectateGameId.trim()}
                   >
                     <Eye className="h-4 w-4 mr-1" /> Espectar
@@ -489,7 +489,7 @@ export default function DashboardPage() {
               <CardTitle className="text-green-300">¡Partida Creada Exitosamente!</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-3">
-              <p className="text-white/90">El ID de tu partida es:</p>
+              <p className="text-black/90">El ID de tu partida es:</p>
               <div className="bg-black/30 p-3 rounded-md inline-block">
                 <strong className="text-xl text-yellow-300 font-mono tracking-wider">{createdGameId}</strong>
               </div>
@@ -498,7 +498,7 @@ export default function DashboardPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
+                  className="bg-yellow-200 text-black border-yellow-300 hover:bg-yellow-300 hover:text-black" // Modified
                   onClick={() => copyToClipboard(createdGameId, "ID de Partida")}
                   aria-label="Copiar ID de Partida Creada"
                 >
@@ -506,7 +506,7 @@ export default function DashboardPage() {
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  className="bg-blue-500 hover:bg-blue-600 text-black" // Modified
                   onClick={() => router.push(`/game/${createdGameId}`)}
                 >
                   <Play className="h-4 w-4 mr-2" /> Ir a la Partida
@@ -545,7 +545,7 @@ export default function DashboardPage() {
                   </p>
                 )}
                 <PayPalSubscribeButton userId={user.id} />
-                <p className="text-xs text-yellow-200/70 mt-3 text-center">
+                <p className="text-xs text-black bg-yellow-200 p-1 rounded mt-3 text-center"> {/* Modified */}
                   La activación de la suscripción es gestionada por el backend.
                 </p>
               </CardContent>
@@ -640,7 +640,7 @@ export default function DashboardPage() {
               </div>
 
               {!canAccessPremiumCustomization && (userSkins.length === 0 || userFilters.length === 0) && (
-                <p className="text-center mt-4 text-yellow-300">
+                <p className="text-center mt-4 bg-yellow-300 p-1 rounded text-black"> {/* Modified */}
                   <button
                     onClick={() =>
                       document.querySelector("#paypal-button-container")?.scrollIntoView({ behavior: "smooth" })
