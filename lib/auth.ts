@@ -1,17 +1,14 @@
-import { sql } from "./database"
+import { sql } from "./database" // This sql function seems to return rows[] directly
 import bcrypt from "bcryptjs"
-import type { User } from "./database" // Ensure User type includes is_premium and premium_expires_at
+import type { User } from "./database"
 
 export async function createUser(username: string, email: string, password: string): Promise<User | null> {
-  // This function seems to be a more direct DB interaction, potentially used by an admin panel or tests.
-  // The main registration logic is in app/actions/auth.ts which is more complete.
-  // For consistency, ensure this also handles all relevant fields if used directly.
   try {
     const hashedPassword = await bcrypt.hash(password, 12)
-    const userId = crypto.randomUUID() // Using crypto.randomUUID() for modern Node.js
+    const userId = crypto.randomUUID()
 
-    // Assuming default values similar to app/actions/auth.ts for a basic user
-    const result = await sql`
+    // Assuming `sql` returns the array of rows directly for RETURNING clauses
+    const rows = await sql`
       INSERT INTO users (
         id, username, email, password_hash, 
         role, is_active, is_verified, 
@@ -30,9 +27,17 @@ export async function createUser(username: string, email: string, password: stri
       )
       RETURNING *; 
     `
-    // Ensure all fields, including is_premium and premium_expires_at, are part of the User type
-    // and correctly cast if necessary (e.g., dates to string if your User type expects that)
-    const dbUser = result.rows[0]
+    // If `sql` returns rows directly, `rows` is the array.
+    if (!rows || rows.length === 0) {
+      console.error("Error creating user in lib/auth: Insert query did not return user data.", {
+        username,
+        email,
+        queryResultRows: rows,
+      })
+      return null
+    }
+
+    const dbUser = rows[0]
     return {
       ...dbUser,
       trial_ends_at: dbUser.trial_ends_at ? new Date(dbUser.trial_ends_at).toISOString() : null,
@@ -42,14 +47,15 @@ export async function createUser(username: string, email: string, password: stri
       last_login: dbUser.last_login ? new Date(dbUser.last_login).toISOString() : null,
     } as User
   } catch (error) {
-    console.error("Error creating user in lib/auth:", error)
+    console.error("Error creating user in lib/auth (catch block):", error)
     return null
   }
 }
 
 export async function authenticateUser(email: string, password: string): Promise<User | null> {
   try {
-    const result = await sql`
+    // Assuming `sql` returns the array of rows directly
+    const rows = await sql`
       SELECT 
         id, username, email, password_hash, role, avatar_url, 
         is_active, is_verified, total_games, total_wins, total_points, 
@@ -60,26 +66,35 @@ export async function authenticateUser(email: string, password: string): Promise
       WHERE email = ${email} AND is_active = true;
     `
 
-    if (result.rows.length === 0) {
+    // `rows` is now expected to be the array of users or undefined/null if error
+    if (!rows) {
+      console.error("Error authenticating user in lib/auth: Query result (rows array) is undefined.", {
+        email,
+        queryResultRows: rows, // Will log undefined if rows is undefined
+      })
+      return null // Indicates a problem with the query or DB connection
+    }
+
+    if (rows.length === 0) {
       return null // User not found or not active
     }
 
-    const userFromDb = result.rows[0]
-
+    const userFromDb = rows[0]
     const isValidPassword = await bcrypt.compare(password, userFromDb.password_hash)
 
     if (!isValidPassword) {
       return null // Invalid password
     }
 
-    // Update last login timestamp
+    // For UPDATE, the return might be different (e.g., rowCount or an object with rowCount)
+    // Let's assume the `sql` for UPDATE doesn't need its result processed here, or it also returns rows if RETURNING was used.
+    // If it's just an UPDATE without RETURNING, the result might be a count or similar.
+    // For simplicity, we'll assume the UPDATE is successful if it doesn't throw.
     await sql`
       UPDATE users 
       SET last_login = NOW() 
       WHERE id = ${userFromDb.id};
     `
-    // Ensure all fields, including is_premium and premium_expires_at, are part of the User type
-    // and correctly cast if necessary (e.g., dates to string if your User type expects that)
     return {
       ...userFromDb,
       trial_ends_at: userFromDb.trial_ends_at ? new Date(userFromDb.trial_ends_at).toISOString() : null,
@@ -89,14 +104,15 @@ export async function authenticateUser(email: string, password: string): Promise
       last_login: new Date().toISOString(), // Reflecting the NOW() update
     } as User
   } catch (error) {
-    console.error("Error authenticating user in lib/auth:", error)
+    console.error("Error authenticating user in lib/auth (catch block):", error)
     return null
   }
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   try {
-    const result = await sql`
+    // Assuming `sql` returns the array of rows directly
+    const rows = await sql`
       SELECT 
         id, username, email, password_hash, role, avatar_url, 
         is_active, is_verified, total_games, total_wins, total_points, 
@@ -106,12 +122,19 @@ export async function getUserByEmail(email: string): Promise<User | null> {
       FROM users 
       WHERE email = ${email};
     `
-    if (result.rows.length === 0) {
+    // `rows` is now expected to be the array of users or undefined/null if error
+    if (!rows) {
+      console.error("Error getting user by email in lib/auth: Query result (rows array) is undefined.", {
+        email,
+        queryResultRows: rows, // Will log undefined if rows is undefined
+      })
       return null
     }
-    const userFromDb = result.rows[0]
-    // Ensure all fields, including is_premium and premium_expires_at, are part of the User type
-    // and correctly cast if necessary (e.g., dates to string if your User type expects that)
+
+    if (rows.length === 0) {
+      return null // User not found
+    }
+    const userFromDb = rows[0]
     return {
       ...userFromDb,
       trial_ends_at: userFromDb.trial_ends_at ? new Date(userFromDb.trial_ends_at).toISOString() : null,
@@ -121,7 +144,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
       last_login: userFromDb.last_login ? new Date(userFromDb.last_login).toISOString() : null,
     } as User
   } catch (error) {
-    console.error("Error getting user by email in lib/auth:", error)
+    console.error("Error getting user by email in lib/auth (catch block):", error)
     return null
   }
 }

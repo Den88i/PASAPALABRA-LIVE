@@ -10,6 +10,7 @@ export async function GET(request: Request, { params }: { params: { userId: stri
   }
 
   try {
+    // This query should now work without the "relation does not exist" error
     const queryResult = await sql`
       SELECT 
         s.id, 
@@ -29,7 +30,16 @@ export async function GET(request: Request, { params }: { params: { userId: stri
       WHERE uus.user_id = ${userId};
     `
 
-    const serializableUserSkins = queryResult.rows.map((row: any) => {
+    // Ensure queryResult and queryResult.rows are valid before proceeding
+    if (!queryResult || !Array.isArray(queryResult)) {
+      // Adjusted based on previous findings that sql might return array directly
+      console.error(`Error fetching skins for user ${userId}: Invalid query result structure. Expected array.`, {
+        queryResult,
+      })
+      return NextResponse.json({ error: "Error interno al procesar datos de skins del usuario" }, { status: 500 })
+    }
+
+    const serializableUserSkins = queryResult.map((row: any) => {
       const newRow: { [key: string]: any } = {}
       for (const key in row) {
         if (Object.prototype.hasOwnProperty.call(row, key)) {
@@ -49,6 +59,10 @@ export async function GET(request: Request, { params }: { params: { userId: stri
     return NextResponse.json(serializableUserSkins)
   } catch (error) {
     console.error(`Error fetching skins for user ${userId}:`, error)
+    // Check if the error is due to a specific known issue, e.g., table not found (though this should be resolved)
+    if (error instanceof Error && error.message.includes("relation") && error.message.includes("does not exist")) {
+      return NextResponse.json({ error: `Error de base de datos: ${error.message}` }, { status: 500 })
+    }
     return NextResponse.json({ error: "Error interno al obtener skins del usuario" }, { status: 500 })
   }
 }

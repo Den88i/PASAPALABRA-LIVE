@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
-import { sql } from "@/lib/database"
-// import type { CameraFilter } from "@/lib/database";
+import { sql } from "@/lib/database" // Assuming this is your Neon SQL client
+// import type { CameraFilter } from "@/lib/database"; // Uncomment if you have this type
 
 export async function GET() {
   try {
-    const queryResult = await sql`
+    // Assuming 'sql' returns the array of rows directly
+    const filtersFromDb = await sql`
       SELECT 
         id, 
         name, 
@@ -12,12 +13,21 @@ export async function GET() {
         thumbnail_url, 
         filter_identifier, 
         is_premium_only,
-        created_at,
-        updated_at
+        created_at
+        -- Add other relevant fields for camera_filters if any
       FROM camera_filters;
     `
 
-    const serializableFilters = queryResult.rows.map((filter: any) => {
+    // Defensive check if filtersFromDb is not an array
+    if (!Array.isArray(filtersFromDb)) {
+      console.error("Error fetching camera filters: Expected an array from DB query, got:", filtersFromDb)
+      return NextResponse.json(
+        { error: "Error interno al obtener filtros de cámara: resultado de consulta inválido" },
+        { status: 500 },
+      )
+    }
+
+    const serializableFilters = filtersFromDb.map((filter: any) => {
       const newFilter: { [key: string]: any } = {}
       for (const key in filter) {
         if (Object.prototype.hasOwnProperty.call(filter, key)) {

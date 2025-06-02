@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { sql } from "@/lib/database"
-// import type { CameraFilter } from "@/lib/database"; // For joined data
 
 export async function GET(request: Request, { params }: { params: { userId: string } }) {
   const { userId } = params
@@ -10,7 +9,8 @@ export async function GET(request: Request, { params }: { params: { userId: stri
   }
 
   try {
-    const queryResult = await sql`
+    // Assuming sql returns the array of rows directly
+    const rows = await sql`
       SELECT 
         cf.id, 
         cf.name, 
@@ -18,16 +18,22 @@ export async function GET(request: Request, { params }: { params: { userId: stri
         cf.thumbnail_url, 
         cf.filter_identifier, 
         cf.is_premium_only,
-        cf.created_at AS filter_created_at, -- Alias to avoid name collision
-        cf.updated_at AS filter_updated_at, -- Alias to avoid name collision
+        cf.created_at AS filter_created_at,
         uucf.unlocked_at
-        -- Assuming user_unlocked_camera_filters doesn't have is_equipped, add if it does
       FROM user_unlocked_camera_filters uucf
       JOIN camera_filters cf ON uucf.camera_filter_id = cf.id
       WHERE uucf.user_id = ${userId};
     `
 
-    const serializableUserFilters = queryResult.rows.map((row: any) => {
+    if (!Array.isArray(rows)) {
+      console.error(`Error fetching camera filters for user ${userId}: Expected an array from SQL query, got:`, rows)
+      return NextResponse.json(
+        { error: "Error interno al obtener filtros de cámara del usuario: resultado de consulta inválido" },
+        { status: 500 },
+      )
+    }
+
+    const serializableUserFilters = rows.map((row: any) => {
       const newRow: { [key: string]: any } = {}
       for (const key in row) {
         if (Object.prototype.hasOwnProperty.call(row, key)) {
@@ -41,7 +47,17 @@ export async function GET(request: Request, { params }: { params: { userId: stri
           }
         }
       }
-      return newRow
+      // Ensure all expected fields from CameraFilter & UserCameraFilter are present or defaulted
+      return {
+        id: newRow.id,
+        name: newRow.name,
+        description: newRow.description,
+        thumbnail_url: newRow.thumbnail_url,
+        filter_identifier: newRow.filter_identifier,
+        is_premium_only: newRow.is_premium_only,
+        created_at: newRow.filter_created_at, // from camera_filters table
+        unlocked_at: newRow.unlocked_at, // from user_unlocked_camera_filters table
+      }
     })
 
     return NextResponse.json(serializableUserFilters)
