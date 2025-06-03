@@ -640,15 +640,9 @@ export default function DashboardPage() {
               </div>
 
               {!canAccessPremiumCustomization && (userSkins.length === 0 || userFilters.length === 0) && (
-                <p className="text-center mt-4 bg-yellow-300 p-1 rounded text-black"> {/* Modified */}
-                  <button
-                    onClick={() =>
-                      document.querySelector("#paypal-button-container")?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="underline hover:text-yellow-200"
-                  >
-                    ¡Hazte Premium
-                  </button>{" "}
+                <p className="text-center mt-4 bg-yellow-300 p-1 rounded text-black">
+                  {/* MODIFIED PART: Removed onClick and changed to <span> */}
+                  <span className="underline">¡Hazte Premium</span>{" "}
                   para desbloquear más opciones de personalización!
                 </p>
               )}
