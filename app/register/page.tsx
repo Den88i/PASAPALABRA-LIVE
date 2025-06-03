@@ -8,108 +8,102 @@ import { Eye, EyeOff, GamepadIcon, Trophy, Users, Loader2 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { registerUser } from "../actions/auth"
+import { registerUser } from "../actions/auth" // Importar la Server Action
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
-  // const [username, setUsername] = useState("") // No longer needed as individual state for form submission
-  // const [email, setEmail] = useState("")    // No longer needed
-  // const [password, setPassword] = useState("") // No longer needed
+  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // Type the event for form
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
     setSuccessMessage("")
 
-    const formData = new FormData(e.currentTarget) // Create FormData from the form
-    const password = formData.get("password") as string
-
-    if (password && password.length < 6) {
-      // Client-side check still useful
+    if (password.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres.")
       setIsLoading(false)
       return
     }
 
-    const result = await registerUser(formData) // Pass FormData to the Server Action
+    const result = await registerUser(username, email, password)
     setIsLoading(false)
 
     if (result.error) {
       setError(result.error)
     } else if (result.success && result.user) {
       setSuccessMessage("¡Cuenta creada exitosamente! Redirigiendo al dashboard...")
+
+      // Simular guardado en localStorage para la demo y redirigir
+      // En una app real, esto se manejaría con sesiones/cookies o un estado global post-login
       localStorage.setItem("user_id", result.user.id)
       localStorage.setItem("user_data", JSON.stringify(result.user))
+
       setTimeout(() => {
         router.push("/dashboard")
-      }, 1500)
+      }, 1500) // Dar tiempo para leer el mensaje de éxito
     } else {
       setError("Error desconocido durante el registro. Inténtalo de nuevo.")
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-sky-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-sky-50">
       <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center space-y-2 pt-6">
-          {/* Logo temporal como texto */}
-          <Link href="/" aria-label="Pasapalabra Live Home">
-            <h1 className="text-3xl font-bold text-indigo-600">PasapalabraLive</h1>
-          </Link>
+        <CardHeader className="flex flex-col items-center space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-indigo-500" />
+            <h1 className="text-2xl font-bold text-indigo-500">Pasalabra Live</h1>
+          </div>
           <p className="text-center text-muted-foreground">Crea una cuenta para jugar</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="name-register" className="text-sm">
-                {" "}
-                {/* Changed from username to name */}
+              <label htmlFor="username" className="text-sm">
                 Nombre de usuario
               </label>
               <Input
-                id="name-register" // ID único
-                name="name" // IMPORTANT: This must be "name" to match formData.get("name") in Server Action
+                id="username"
                 type="text"
                 placeholder="Tu nombre de usuario"
-                // value={username} // Controlled component no longer strictly necessary for FormData
-                // onChange={(e) => setUsername(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
                 disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="email-register" className="text-sm">
+              <label htmlFor="email" className="text-sm">
                 Email
               </label>
               <Input
-                id="email-register" // ID único
-                name="email"
+                id="email"
                 type="email"
                 placeholder="tu@email.com"
-                // value={email}
-                // onChange={(e) => setEmail(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password-register" className="text-sm">
+              <label htmlFor="password" className="text-sm">
                 Contraseña (mín. 6 caracteres)
               </label>
               <div className="relative">
                 <Input
-                  id="password-register" // ID único
-                  name="password"
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Tu contraseña"
-                  // value={password}
-                  // onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
                 />
@@ -120,9 +114,9 @@ export default function RegisterPage() {
                   className="absolute right-0 top-0 h-full"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
-                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <span className="sr-only">{showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}</span>
                 </Button>
               </div>
             </div>

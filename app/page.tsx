@@ -1,17 +1,19 @@
 "use client"
 
-// No Image import needed for now
 import type React from "react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Eye, EyeOff, GamepadIcon, Trophy, Users, Loader2 } from "lucide-react"
+import { Eye, EyeOff, GamepadIcon, Trophy, Users, Loader2 } from "lucide-react" // Added Loader2
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { loginUser } from "./actions/auth"
 
+// Verificar si estamos en el servidor y si hay variables de entorno críticas
 if (typeof window === "undefined") {
+  // Solo verificar en el servidor
   if (!process.env.DATABASE_URL) {
     console.warn("DATABASE_URL no está configurada")
   }
@@ -19,15 +21,18 @@ if (typeof window === "undefined") {
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(true)
+  const [isConnecting, setIsConnecting] = useState(true) // Mantenemos la simulación de conexión inicial
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  // Simulate connection status
   useEffect(() => {
-    const timer = setTimeout(() => setIsConnecting(false), 1000)
+    const timer = setTimeout(() => setIsConnecting(false), 1000) // Reducido tiempo de conexión
+
+    // Check if already logged in
     const userId = localStorage.getItem("user_id")
     if (userId) {
       router.push("/dashboard")
@@ -40,7 +45,7 @@ export default function LoginPage() {
     setIsLoading(true)
     setError("")
 
-    const result = await loginUser(email, password)
+    const result = await loginUser(email, password) // Llama a la Server Action
     setIsLoading(false)
 
     if (result.error) {
@@ -57,18 +62,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-sky-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-sky-50 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="flex flex-col items-center space-y-4 pt-6">
-          {/* Logo temporal como texto */}
-          <Link href="/" aria-label="Pasapalabra Live Home">
-            <h1 className="text-3xl font-bold text-indigo-600">PasapalabraLive</h1>
-          </Link>
-          <p className="text-center text-sm text-muted-foreground">
-            El juego de palabras más emocionante en tiempo real
-          </p>
+        <CardHeader className="flex flex-col items-center space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-indigo-500" />
+            <h1 className="text-2xl font-bold text-indigo-500">Pasapalabra Live</h1>
+          </div>
+          <p className="text-center text-muted-foreground">El juego de palabras más emocionante en tiempo real</p>
           {isConnecting && (
-            <div className="flex items-center gap-2 text-xs text-amber-500">
+            <div className="flex items-center gap-2 text-sm text-amber-500">
               <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
               <span>Conectando...</span>
             </div>
@@ -77,12 +80,11 @@ export default function LoginPage() {
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email-login" className="text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email
               </label>
               <Input
-                id="email-login" // ID único para el input de email en login
-                name="email"
+                id="email"
                 type="email"
                 placeholder="tu@email.com"
                 value={email}
@@ -92,13 +94,12 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password-login" className="text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Contraseña
               </label>
               <div className="relative">
                 <Input
-                  id="password-login" // ID único para el input de contraseña en login
-                  name="password"
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Tu contraseña"
                   value={password}
@@ -112,9 +113,9 @@ export default function LoginPage() {
                   size="icon"
                   className="absolute right-0 top-0 h-full px-3"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <span className="sr-only">{showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}</span>
                 </Button>
               </div>
             </div>
@@ -142,6 +143,8 @@ export default function LoginPage() {
               ¿No tienes cuenta? Regístrate
             </Link>
           </div>
+
+          {/* SECCIÓN DE CREDENCIALES DE PRUEBA ELIMINADA */}
         </CardContent>
         <CardFooter className="flex justify-center border-t pt-4 mt-4">
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
@@ -160,20 +163,6 @@ export default function LoginPage() {
           </div>
         </CardFooter>
       </Card>
-      <footer className="py-8 mt-8 text-center text-sm text-muted-foreground">
-        <div className="container flex flex-col md:flex-row justify-center items-center gap-x-4 gap-y-2">
-          <Link href="/legal/terms-of-service" className="hover:text-primary">
-            Términos de Servicio
-          </Link>
-          <Link href="/legal/privacy-policy" className="hover:text-primary">
-            Política de Privacidad
-          </Link>
-          <Link href="/legal/refund-policy" className="hover:text-primary">
-            Política de Reembolsos
-          </Link>
-        </div>
-        <p className="mt-4">© {new Date().getFullYear()} PasalabraLive. Todos los derechos reservados.</p>
-      </footer>
     </div>
   )
 }
